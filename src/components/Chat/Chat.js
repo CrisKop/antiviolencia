@@ -17,6 +17,8 @@ const keywords = searchParams.get("keywords")?.split(" ")
   .sort((a, b) => {
     return prioridad.indexOf(a) - prioridad.indexOf(b);
   });
+
+  const valorViolentometro = searchParams.get("violentometro");
   const [messages, setMessages] = useState([
     {
       id: "1",
@@ -31,11 +33,12 @@ const keywords = searchParams.get("keywords")?.split(" ")
     {
       id: "2",
       sender: "Bot",
-      message: "He revisado tus respuestas y es una situación dificil.",
+      message: "He revisado tus respuestas y es una situación dificil. \n\nTu nivel de violencia es",
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
+      violentometro: valorViolentometro
     },
     {
       id: "3",
@@ -357,10 +360,11 @@ const determineSupportRoute = (messages, keywordsFromUrl = "") => {
           </div>
         </div>
 
+      { /* #MARK: Map de mensajes */}
         {/* Messages */}
         <div className="max-w-4xl flex-1 overflow-y-auto px-6 py-4 space-y-1">
           {messages.map((msg) => (
-            <Message key={msg.id} {...msg} ubicacion={msg.ubicacion ?? null} />
+            <Message key={msg.id} {...msg} ubicacion={msg.ubicacion ?? null} violentometro={msg.violentometro ?? null}/>
           ))}
           {isTyping && <TypingIndicator />}
           <div ref={messagesEndRef} />

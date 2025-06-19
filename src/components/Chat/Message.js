@@ -3,8 +3,21 @@ import React from "react";
 import { Bot, User } from "lucide-react";
 import Map from "../Maps/Map"; // Asegúrate de que la ruta sea correcta
 
-const Message = ({ sender, message, timestamp, ubicacion }) => {
+const Message = ({ sender, message, timestamp, ubicacion, violentometro }) => {
   const isBot = sender.toLowerCase() === "bot" || sender.toLowerCase() === "ai";
+let porcentajeViolencia = (typeof violentometro === "number" && !isNaN(violentometro))
+  ? (violentometro / 82) * 100
+  : null;
+
+let nivel = "";
+
+if (porcentajeViolencia !== null) {
+  if (porcentajeViolencia >= 75) nivel = "Crítico";
+  if (porcentajeViolencia >= 50 && porcentajeViolencia < 75) nivel = "Alto";
+  if (porcentajeViolencia >= 25 && porcentajeViolencia < 50) nivel = "Medio";
+  if (porcentajeViolencia < 25) nivel = "Bajo";
+}
+
 
   return (
     <div
@@ -26,7 +39,7 @@ const Message = ({ sender, message, timestamp, ubicacion }) => {
           }`}
         >
           <p className="text-sm leading-relaxed whitespace-pre-wrap">
-            {message}
+            {message + (violentometro && ` ${nivel}`)}
           </p>
           {ubicacion && (
             <div className="mt-2">
@@ -39,6 +52,27 @@ const Message = ({ sender, message, timestamp, ubicacion }) => {
               />
             </div>
           )}
+
+
+      {violentometro !== null && !isNaN(violentometro) && (
+  <div className="mt-2 w-full h-4 bg-gray-200 rounded overflow-hidden">
+    <div
+      className={`h-full rounded transition-all duration-500 ${
+        violentometro < 20
+          ? "bg-green-400"
+          : violentometro < 50
+          ? "bg-yellow-400"
+          : violentometro < 75
+          ? "bg-orange-500"
+          : "bg-red-600"
+      }`}
+      style={{ width: `${(violentometro / 82) * 100}%` }}
+    />
+  </div>
+)}
+
+
+
         </div>
         {timestamp && (
           <p

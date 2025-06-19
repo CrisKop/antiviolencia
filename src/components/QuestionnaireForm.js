@@ -23,6 +23,7 @@ export const QuestionnaireForm = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [answers, setAnswers] = useState({});
   const [errors, setErrors] = useState({});
+  const [violentometro, setViolentometro] = useState(0);
 
   const currentQuestions = questions[currentStep] || [];
   const currentQuestion = currentQuestions[currentQuestionIndex];
@@ -49,20 +50,43 @@ export const QuestionnaireForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
-    if (!validateCurrentQuestion()) return;
-    if (isLastQuestionInStep) {
-      if (isLastStep) {
-        handleSubmit();
-      } else {
-        setCurrentStep(currentStep + 1);
-        setCurrentQuestionIndex(0);
-      }
-    } else {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+ const handleNext = () => {
+  if (!validateCurrentQuestion()) return;
+
+  const answer = answers[currentQuestion.id];
+
+  // 👉 Lógica para sumar puntos
+  let puntos = 0;
+
+  if (currentQuestion.type === "radio" || currentQuestion.type === "select") {
+    const selected = currentQuestion.options.find(opt => opt.option === answer);
+    if (selected) puntos += selected.puntos;
+  }
+
+  if (currentQuestion.type === "multiselect") {
+    for (const selectedOption of answer) {
+      const selected = currentQuestion.options.find(opt => opt.option === selectedOption);
+      if (selected) puntos += selected.puntos;
     }
-    setErrors({});
-  };
+  }
+
+  setViolentometro(prev => prev + puntos); // ✅ suma al total actual
+
+  if (isLastQuestionInStep) {
+    if (isLastStep) {
+      handleSubmit();
+    } else {
+      setCurrentStep(currentStep + 1);
+      setCurrentQuestionIndex(0);
+    }
+  } else {
+    setCurrentQuestionIndex(currentQuestionIndex + 1);
+  }
+
+  console.log(violentometro)
+  setErrors({});
+};
+
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
@@ -91,7 +115,8 @@ export const QuestionnaireForm = () => {
     .join(" ");
 
   const encodedKeywords = encodeURIComponent(keywordsToSend);
-  router.push(`/chat?keywords=${encodedKeywords}`);
+  const encodedViolentometro = encodeURIComponent(violentometro)
+  router.push(`/chat?keywords=${encodedKeywords}&violentometro=${encodedViolentometro}`);
 };
 
 
@@ -162,8 +187,8 @@ export const QuestionnaireForm = () => {
             >
               <option value="">Select an option...</option>
               {currentQuestion.options?.map((option) => (
-                <option key={option} value={option}>
-                  {option}
+                <option key={option.option} value={option.option}>
+                  {option.option}
                 </option>
               ))}
             </select>
@@ -175,11 +200,11 @@ export const QuestionnaireForm = () => {
           <div className="space-y-3">
             {currentQuestion.options?.map((option) => (
               <label
-                key={option}
+                key={option.option}
                 className={`
                   flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-[#424242]
                   ${
-                    answer === option
+                    answer === option.option
                       ? "border-primary bg-primary/5"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   }
@@ -188,8 +213,8 @@ export const QuestionnaireForm = () => {
                 <input
                   type="radio"
                   name={currentQuestion.id}
-                  value={option}
-                  checked={answer === option}
+                  value={option.option}
+                  checked={answer === option.option}
                   onChange={(e) =>
                     updateAnswer(currentQuestion.id, e.target.value)
                   }
@@ -205,7 +230,7 @@ export const QuestionnaireForm = () => {
                     <div className="w-2.5 h-2.5 rounded-full bg-primary animate-scale-in" />
                   )}
                 </div>
-                <span className="text-lg text-text">{option}</span>
+                <span className="text-lg text-text">{option.option}</span>
               </label>
             ))}
           </div>
@@ -217,11 +242,11 @@ export const QuestionnaireForm = () => {
           <div className="space-y-3">
             {currentQuestion.options?.map((option) => (
               <label
-                key={option}
+                key={option.option}
                 className={`
                   flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-[#424242]
                   ${
-                    selectedOptions.includes(option)
+                    selectedOptions.includes(option.option)
                       ? "border-primary bg-primary/5"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   }
@@ -229,11 +254,11 @@ export const QuestionnaireForm = () => {
               >
                 <input
                   type="checkbox"
-                  checked={selectedOptions.includes(option)}
+                  checked={selectedOptions.includes(option.option)}
                   onChange={(e) => {
                     const newSelected = e.target.checked
-                      ? [...selectedOptions, option]
-                      : selectedOptions.filter((item) => item !== option);
+                      ? [...selectedOptions, option.option]
+                      : selectedOptions.filter((item) => item !== option.option);
                     updateAnswer(currentQuestion.id, newSelected);
                   }}
                   className="sr-only text-[#424242]"
@@ -242,17 +267,17 @@ export const QuestionnaireForm = () => {
                   className={`
                   w-5 h-5 rounded border-2 mr-3 flex items-center justify-center
                   ${
-                    selectedOptions.includes(option)
+                    selectedOptions.includes(option.option)
                       ? "border-primary bg-primary"
                       : "border-gray-300"
                   }
                 `}
                 >
-                  {selectedOptions.includes(option) && (
+                  {selectedOptions.includes(option.option) && (
                     <CheckCircle className="w-3 h-3 text-white" />
                   )}
                 </div>
-                <span className="text-lg text-text">{option}</span>
+                <span className="text-lg text-text">{option.option}</span>
               </label>
             ))}
           </div>

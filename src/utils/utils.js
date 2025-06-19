@@ -28,8 +28,8 @@ export const questions = {
       question: "¿Alguien en tu casa te hace sentir con miedo o en peligro?",
       required: true,
       options: [
-        "Si",
-        "No",
+        { option: "Si", puntos: 10 },
+        { option: "No", puntos: 0 },
       ]
     },
     {
@@ -38,11 +38,11 @@ export const questions = {
       question: "¿Cuál es el tipo de violencia que estás experimentando?",
       required: true,
       options: [
-        "Físicas (golpes, empujones, etc.)",
-        "Verbales (insultos, gritos, etc.)",
-        "Psicológica (manipulación, chantaje, etc.)",
-        "Sexual (acoso, abuso, etc.)",
-        "Económica (control de dinero, etc.)"
+        { option: "Físicas (golpes, empujones, etc.)", puntos: 10 },
+        { option: "Verbales (insultos, gritos, etc.)", puntos: 4 },
+        { option: "Psicológica (manipulación, chantaje, etc.)", puntos: 6 },
+        { option: "Sexual (acoso, abuso, etc.)", puntos: 10 },
+        { option: "Económica (control de dinero, etc.)", puntos: 5 },
       ]
     },
     {
@@ -50,14 +50,21 @@ export const questions = {
       type: "radio",
       question: "¿Cuántas veces ha experimentado violencia en el último mes?",
       required: true,
-      options: ["1-2 veces", "3-5 veces", "Más de 5 veces"]
+      options: [
+        { option: "1-2 veces", puntos: 3 },
+        { option: "3-5 veces", puntos: 6 },
+        { option: "Más de 5 veces", puntos: 10 },
+      ]
     },
     {
       id: "buscasteAyuda",
       type: "radio",
       question: "¿Has intentado buscar ayuda anteriormente?",
       required: true,
-      options: ["Sí", "No"]
+      options: [
+        { option: "Sí", puntos: 2 },
+        { option: "No", puntos: 5 },
+      ]
     },
   ],
   2: [
@@ -66,27 +73,39 @@ export const questions = {
       type: "radio",
       question: "¿Cuál es tu nivel de ansiedad o estrés actual?",
       required: true,
-      options: ["Bajo", "Moderado", "Alto"]
+      options: [
+        { option: "Bajo", puntos: 1 },
+        { option: "Moderado", puntos: 4 },
+        { option: "Alto", puntos: 8 },
+      ]
     },
     {
       id: "experimentoTrauma",
       type: "radio",
       question: "¿Ha experimentado algún tipo de trauma en el pasado?",
       required: true,
-      options: ["Sí", "No"]
+      options: [
+        { option: "Sí", puntos: 6 },
+        { option: "No", puntos: 0 },
+      ]
     },
     {
       id: "apoyoSocial",
       type: "radio",
       question: "¿Cuál es tu nivel de apoyo social actual?",
       required: true,
-      options: ["Bajo (sin apoyo de amigos o familiares)", "Moderado (algunos amigos/familiares me apoyan)", "Alto (tengo una red de apoyo sólida)"]
+      options: [
+        { option: "Bajo (sin apoyo de amigos o familiares)", puntos: 8 },
+        { option: "Moderado (algunos amigos/familiares me apoyan)", puntos: 4 },
+        { option: "Alto (tengo una red de apoyo sólida)", puntos: 0 },
+      ]
     },
     {
       id: "preocupacionPrincipal",
       type: "textarea",
       question: "¿Qué es lo que más te preocupa en este momento?",
       placeholder: "Escribe tu preocupación principal..."
+      // No necesita puntos, se analiza cualitativamente
     }
   ]
 };
