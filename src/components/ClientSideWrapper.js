@@ -33,7 +33,7 @@ export default function ClientSideWrapper() {
 
   return (
     <>
-      {showingAd ?? <EmergencyInfo onClose={() => setShowingAd(false)} />}
+      {showingAd && <EmergencyInfo onClose={() => setShowingAd(false)} />}
 
       {showEmergencyScreen && (
         <EmergencyScreen onClose={() => setShowEmergencyScreen(false)} />

@@ -5,8 +5,18 @@ import Message from "./Message";
 import ChatInput from "./ChatInput";
 import TypingIndicator from "./TypingIndicator";
 import { MessageCircle, Settings, MoreVertical } from "lucide-react";
+  import { useSearchParams } from "next/navigation";
 
 function ChatBox() {
+
+  //#MARK: Obtener datos de params de url
+const searchParams = useSearchParams();
+const prioridad = ["Sexual", "Físicas", "Psicológica", "Verbales", "Económica"];
+
+const keywords = searchParams.get("keywords")?.split(" ")
+  .sort((a, b) => {
+    return prioridad.indexOf(a) - prioridad.indexOf(b);
+  });
   const [messages, setMessages] = useState([
     {
       id: "1",
@@ -90,108 +100,146 @@ function ChatBox() {
 
   // #MARK: Determinar ruta de apoyo
   // Esta función determina la ruta de apoyo adecuada según las palabras clave en los mensajes del usuario
-  const determineSupportRoute = (messages) => {
-    console.log("Determinando ruta de apoyo con mensajes:", messages);
-    const text = messages.join(" ").toLowerCase();
+const determineSupportRoute = (messages, keywordsFromUrl = "") => {
+  console.log("Determinando ruta de apoyo con mensajes:", messages);
 
-    const routes = [
-      {
-        name: "Comisaría de Familia",
-        keywords: [
-          "pareja",
-          "familiar",
-          "hogar",
-          "violencia intrafamiliar",
-          "esposo",
-          "mamá",
-          "papá",
-          "hermano",
-        ],
-      },
-      {
-        name: "Alcaldía Municipal de Ocaña",
-        keywords: [
-          "ayuda social",
-          "vivienda",
-          "asistencia",
-          "ayuda económica",
-          "alcaldía",
-          "programa",
-        ],
-      },
-      {
-        name: "Fiscalía",
-        keywords: [
-          "denuncia",
-          "denunciar",
-          "abuso sexual",
-          "sexual",
-          "delito sexual",
-          "abuso",
-          "agresión",
-          "delito",
-          "amenaza",
-          "acoso",
-          "violación",
-          "violador",
-        ],
-      },
-      {
-        name: "Fundación Mujer y Futuro",
-        keywords: [
-          "mujer",
-          "violencia de género",
-          "empoderamiento",
-          "ayuda psicológica",
-          "acompañamiento",
-        ],
-      },
-      {
-        name: "UNICEF",
-        keywords: [
-          "niño",
-          "niña",
-          "menor",
-          "infancia",
-          "adolescente",
-          "maltrato infantil",
-        ],
-      },
-      {
-        name: "Proyecto A Tu Lado",
-        keywords: [
-          "acompañamiento",
-          "terapia",
-          "escucha",
-          "soporte emocional",
-          "psicológico",
-          "charlar",
-        ],
-      },
-      {
-        name: "Consejo Noruego",
-        keywords: [
-          "desplazado",
-          "refugiado",
-          "víctima",
-          "conflicto armado",
-          "ayuda internacional",
-          "protección",
-        ],
-      },
-    ];
+  keywordsFromUrl = keywords;
+  // Combinar mensajes y keywords adicionales
+  let text = (messages.join(" ") + " " + keywordsFromUrl).toLowerCase();
 
-    for (const route of routes) {
-      if (route.keywords.some((keyword) => text.includes(keyword))) {
-        return route.name;
+  console.log(text)
+
+  const routes = [
+    {
+      name: "Comisaría de Familia",
+      keywords: [
+        "pareja",
+        "familiar",
+        "hogar",
+        "violencia intrafamiliar",
+        "esposo",
+        "mamá",
+        "papá",
+        "hermano",
+        "físicas",
+        "psicológica",
+        "verbales",
+        "económica",
+      ],
+    },
+    {
+      name: "Alcaldía Municipal de Ocaña",
+      keywords: [
+        "ayuda social",
+        "vivienda",
+        "asistencia",
+        "ayuda económica",
+        "alcaldía",
+        "programa",
+        "económica",
+      ],
+    },
+    {
+      name: "Fiscalía",
+      keywords: [
+        "denuncia",
+        "denunciar",
+        "abuso sexual",
+        "sexual",
+        "delito sexual",
+        "abuso",
+        "agresión",
+        "delito",
+        "amenaza",
+        "acoso",
+        "violación",
+        "violador",
+        "sexual",
+        "físicas",
+      ],
+    },
+    {
+      name: "Fundación Mujer y Futuro",
+      keywords: [
+        "mujer",
+        "violencia de género",
+        "empoderamiento",
+        "ayuda psicológica",
+        "acompañamiento",
+        "psicológica",
+        "económica",
+      ],
+    },
+    {
+      name: "UNICEF",
+      keywords: [
+        "niño",
+        "niña",
+        "menor",
+        "infancia",
+        "adolescente",
+        "maltrato infantil",
+        "sexual",
+        "físicas",
+      ],
+    },
+    {
+      name: "Proyecto A Tu Lado",
+      keywords: [
+        "acompañamiento",
+        "terapia",
+        "escucha",
+        "soporte emocional",
+        "psicológico",
+        "charlar",
+        "psicológica",
+        "verbales",
+      ],
+    },
+    {
+      name: "Consejo Noruego",
+      keywords: [
+        "desplazado",
+        "refugiado",
+        "víctima",
+        "conflicto armado",
+        "ayuda internacional",
+        "protección",
+        "físicas",
+        "económica",
+      ],
+    },
+  ];
+
+  // Contar coincidencias por ruta
+  let mejorRuta = null;
+  let maxCoincidencias = 0;
+
+  for (const route of routes) {
+    let coincidencias = 0;
+
+    for (const keyword of route.keywords) {
+      if (text.includes(keyword.toLowerCase())) {
+        coincidencias++;
       }
     }
 
-    // Si no se encuentra una ruta específica, elige una al azar
-    console.log("No se encontró una ruta específica, eligiendo al azar");
-    const randomRoute = routes[Math.floor(Math.random() * routes.length)];
-    return randomRoute.name;
-  };
+    if (coincidencias > maxCoincidencias) {
+      maxCoincidencias = coincidencias;
+      mejorRuta = route.name;
+    }
+  }
+
+  if (mejorRuta) {
+    return mejorRuta;
+  }
+
+  // Si no hay coincidencias
+  console.log("No se encontró una ruta específica, eligiendo al azar");
+  const randomRoute = routes[Math.floor(Math.random() * routes.length)];
+  return randomRoute.name;
+};
+
 
   //MARK: Generar respuesta de la IA
   // Función principal que responde como la IA

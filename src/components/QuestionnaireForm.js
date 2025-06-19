@@ -74,6 +74,8 @@ export const QuestionnaireForm = () => {
     setErrors({});
   };
 
+
+  //#MARK: Enviar form
   const handleSubmit = async () => {
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -82,6 +84,17 @@ export const QuestionnaireForm = () => {
   };
 
   useEffect(() => {
+
+    const redirectToChat = () => {
+  const keywordsToSend = answers.tipoViolencia
+    .map(str => str.split(" ")[0])
+    .join(" ");
+
+  const encodedKeywords = encodeURIComponent(keywordsToSend);
+  router.push(`/chat?keywords=${encodedKeywords}`);
+};
+
+
     if (isCompleted) {
       // Redirect to chat after 2 seconds
       console.log("Form completed, redirecting to chat...");
@@ -89,11 +102,12 @@ export const QuestionnaireForm = () => {
         redirectToChat();
       }, 2000);
     }
-  }, [isCompleted]);
+  }, [isCompleted, answers, router]);
 
-  const redirectToChat = () => {
-    router.push("/chat");
-  };
+
+
+
+
 
   const updateAnswer = (questionId, value) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
