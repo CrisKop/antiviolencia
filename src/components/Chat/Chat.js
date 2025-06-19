@@ -351,6 +351,13 @@ const determineSupportRoute = (messages, keywordsFromUrl = "") => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+                <button
+      onClick={() => {}}
+      className="bg-[#8fb8ca] hover:bg-[#9fcde2] text-white font-bold px-5 py-3 rounded-full shadow-lg transition-all duration-200 cursor-pointer"
+      title="Activar modo seguro"
+    >
+      Exportar Chat
+    </button>
             <button className="p-2 text-[#666] hover:text-[#333] hover:bg-[#eee] rounded-lg transition-all duration-200">
               <Settings size={18} />
             </button>
