@@ -39,7 +39,7 @@ if (porcentajeViolencia !== null) {
           }`}
         >
           <p className="text-sm leading-relaxed whitespace-pre-wrap">
-            {message + (violentometro && ` ${nivel}`)}
+            {message}
           </p>
           {ubicacion && (
             <div className="mt-2">
