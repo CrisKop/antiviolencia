@@ -1,14 +1,21 @@
 // Reemplazo completo del componente QuestionnaireForm con clases personalizadas inline
-'use client'
+"use client";
 
-import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft, CheckCircle, RotateCcw, Star } from 'lucide-react';
-import { FormStep } from './FormStep';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle,
+  RotateCcw,
+  Star,
+} from "lucide-react";
+import { FormStep } from "./FormStep";
 
-import { classes, questions, steps
- } from '@/utils/utils';
+import { classes, questions, steps } from "@/utils/utils";
 
 export const QuestionnaireForm = () => {
+  const router = useRouter();
   // #MARK: States
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -19,27 +26,28 @@ export const QuestionnaireForm = () => {
 
   const currentQuestions = questions[currentStep] || [];
   const currentQuestion = currentQuestions[currentQuestionIndex];
-  const isLastQuestionInStep = currentQuestionIndex === currentQuestions.length - 1;
+  const isLastQuestionInStep =
+    currentQuestionIndex === currentQuestions.length - 1;
   const isLastStep = currentStep === Object.keys(questions).length;
-
 
   //#MARK: Validate current question
   const validateCurrentQuestion = () => {
     if (!currentQuestion?.required) return true;
     const answer = answers[currentQuestion.id];
     const newErrors = {};
-    if (!answer || (Array.isArray(answer) && answer.length === 0) || answer === '') {
-      newErrors[currentQuestion.id] = 'This question is required';
+    if (
+      !answer ||
+      (Array.isArray(answer) && answer.length === 0) ||
+      answer === ""
+    ) {
+      newErrors[currentQuestion.id] = "This question is required";
     }
-    if (currentQuestion.type === 'rating' && (!answer || answer === 0)) {
-      newErrors[currentQuestion.id] = 'Please provide a rating';
+    if (currentQuestion.type === "rating" && (!answer || answer === 0)) {
+      newErrors[currentQuestion.id] = "Please provide a rating";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-
-
 
   const handleNext = () => {
     if (!validateCurrentQuestion()) return;
@@ -68,69 +76,87 @@ export const QuestionnaireForm = () => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsSubmitting(false);
     setIsCompleted(true);
   };
 
+  useEffect(() => {
+    if (isCompleted) {
+      // Redirect to chat after 2 seconds
+      console.log("Form completed, redirecting to chat...");
+      setTimeout(() => {
+        redirectToChat();
+      }, 2000);
+    }
+  }, [isCompleted]);
+
+  const redirectToChat = () => {
+    router.push("/chat");
+  };
+
   const updateAnswer = (questionId, value) => {
-    setAnswers(prev => ({ ...prev, [questionId]: value }));
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
     if (errors[questionId]) {
-      setErrors(prev => ({ ...prev, [questionId]: '' }));
+      setErrors((prev) => ({ ...prev, [questionId]: "" }));
     }
   };
 
-   const renderQuestion = () => {
+  const renderQuestion = () => {
     if (!currentQuestion) return null;
 
     const answer = answers[currentQuestion.id];
     const error = errors[currentQuestion.id];
 
     switch (currentQuestion.type) {
-      case 'text':
+      case "text":
         return (
           <div className="space-y-4">
             <input
               type="text"
-              value={answer || ''}
+              value={answer || ""}
               onChange={(e) => updateAnswer(currentQuestion.id, e.target.value)}
               placeholder={currentQuestion.placeholder}
               className={`
                 w-full px-6 py-4 text-lg bg-white border-2 rounded-xl
                 transition-all duration-200 outline-none text-[#424242]
-                ${error 
-                  ? 'border-error focus:border-error focus:ring-4 focus:ring-error/20' 
-                  : 'border-gray-300 focus:border-primary focus:ring-4 focus:ring-primary/20'
+                ${
+                  error
+                    ? "border-error focus:border-error focus:ring-4 focus:ring-error/20"
+                    : "border-gray-300 focus:border-primary focus:ring-4 focus:ring-primary/20"
                 }
               `}
             />
           </div>
         );
 
-      case 'select':
+      case "select":
         return (
           <div className="space-y-4">
             <select
-              value={answer || ''}
+              value={answer || ""}
               onChange={(e) => updateAnswer(currentQuestion.id, e.target.value)}
               className={`
                 w-full px-6 py-4 text-lg bg-white border-2 rounded-xl
                 transition-all duration-200 outline-none text-[#424242]
-                ${error 
-                  ? 'border-error focus:border-error focus:ring-4 focus:ring-error/20' 
-                  : 'border-gray-300 focus:border-primary focus:ring-4 focus:ring-primary/20'
+                ${
+                  error
+                    ? "border-error focus:border-error focus:ring-4 focus:ring-error/20"
+                    : "border-gray-300 focus:border-primary focus:ring-4 focus:ring-primary/20"
                 }
               `}
             >
               <option value="">Select an option...</option>
               {currentQuestion.options?.map((option) => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
             </select>
           </div>
         );
 
-      case 'radio':
+      case "radio":
         return (
           <div className="space-y-3">
             {currentQuestion.options?.map((option) => (
@@ -138,9 +164,10 @@ export const QuestionnaireForm = () => {
                 key={option}
                 className={`
                   flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-[#424242]
-                  ${answer === option 
-                    ? 'border-primary bg-primary/5' 
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  ${
+                    answer === option
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   }
                 `}
               >
@@ -149,13 +176,17 @@ export const QuestionnaireForm = () => {
                   name={currentQuestion.id}
                   value={option}
                   checked={answer === option}
-                  onChange={(e) => updateAnswer(currentQuestion.id, e.target.value)}
+                  onChange={(e) =>
+                    updateAnswer(currentQuestion.id, e.target.value)
+                  }
                   className="sr-only text-[#424242]"
                 />
-                <div className={`
+                <div
+                  className={`
                   w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center
-                  ${answer === option ? 'border-primary' : 'border-gray-300'}
-                `}>
+                  ${answer === option ? "border-primary" : "border-gray-300"}
+                `}
+                >
                   {answer === option && (
                     <div className="w-2.5 h-2.5 rounded-full bg-primary animate-scale-in" />
                   )}
@@ -166,7 +197,7 @@ export const QuestionnaireForm = () => {
           </div>
         );
 
-      case 'multiselect':
+      case "multiselect":
         const selectedOptions = answer || [];
         return (
           <div className="space-y-3">
@@ -175,9 +206,10 @@ export const QuestionnaireForm = () => {
                 key={option}
                 className={`
                   flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-[#424242]
-                  ${selectedOptions.includes(option)
-                    ? 'border-primary bg-primary/5' 
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  ${
+                    selectedOptions.includes(option)
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   }
                 `}
               >
@@ -192,10 +224,16 @@ export const QuestionnaireForm = () => {
                   }}
                   className="sr-only text-[#424242]"
                 />
-                <div className={`
+                <div
+                  className={`
                   w-5 h-5 rounded border-2 mr-3 flex items-center justify-center
-                  ${selectedOptions.includes(option) ? 'border-primary bg-primary' : 'border-gray-300'}
-                `}>
+                  ${
+                    selectedOptions.includes(option)
+                      ? "border-primary bg-primary"
+                      : "border-gray-300"
+                  }
+                `}
+                >
                   {selectedOptions.includes(option) && (
                     <CheckCircle className="w-3 h-3 text-white" />
                   )}
@@ -206,7 +244,7 @@ export const QuestionnaireForm = () => {
           </div>
         );
 
-      case 'rating':
+      case "rating":
         return (
           <div className="flex justify-center space-x-2">
             {[1, 2, 3, 4, 5].map((rating) => (
@@ -215,29 +253,37 @@ export const QuestionnaireForm = () => {
                 onClick={() => updateAnswer(currentQuestion.id, rating)}
                 className={`
                   p-3 rounded-full transition-all duration-200 transform hover:scale-110
-                  ${answer >= rating ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-300'}
+                  ${
+                    answer >= rating
+                      ? "text-yellow-400"
+                      : "text-gray-300 hover:text-yellow-300"
+                  }
                 `}
               >
-                <Star size={40} fill={answer >= rating ? 'currentColor' : 'none'} />
+                <Star
+                  size={40}
+                  fill={answer >= rating ? "currentColor" : "none"}
+                />
               </button>
             ))}
           </div>
         );
 
-      case 'textarea':
+      case "textarea":
         return (
           <div className="space-y-4">
             <textarea
-              value={answer || ''}
+              value={answer || ""}
               onChange={(e) => updateAnswer(currentQuestion.id, e.target.value)}
               placeholder={currentQuestion.placeholder}
               rows={4}
               className={`
                 w-full px-6 py-4 text-lg bg-white border-2 rounded-xl resize-none
                 transition-all duration-200 outline-none text-[#424242]
-                ${error 
-                  ? 'border-error focus:border-error focus:ring-4 focus:ring-error/20' 
-                  : 'border-gray-300 focus:border-primary focus:ring-4 focus:ring-primary/20'
+                ${
+                  error
+                    ? "border-error focus:border-error focus:ring-4 focus:ring-error/20"
+                    : "border-gray-300 focus:border-primary focus:ring-4 focus:ring-primary/20"
                 }
               `}
             />
@@ -254,21 +300,25 @@ export const QuestionnaireForm = () => {
   const progress = (answeredQuestions / totalQuestions) * 100;
 
   const bgStyle = {
-    background: `linear-gradient(to bottom right, ${classes.background}, ${classes.secondaryLight})`
+    background: `linear-gradient(to bottom right, ${classes.background}, ${classes.secondaryLight})`,
   };
 
-   if (isCompleted) {
+  if (isCompleted) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#FAFAFA] to-[#E1F5FE]">
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-fade-in">
           <div className="w-20 h-20 bg-[#A5D6A7] rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-subtle">
             <CheckCircle size={40} className="text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-[#424242] mb-4">Thank You!</h2>
+          <h2 className="text-3xl font-bold text-[#424242] mb-4">¡Ya casi!</h2>
           <p className="text-[#757575] mb-8 text-lg">
-            Your responses have been submitted successfully. We appreciate you taking the time to complete our questionnaire.
+            Tu situación ha sido registrada exitosamente. <br />
+            <br />
+            Estamos analizando tus respuestas para ofrecerte la mejor
+            experiencia posible.
           </p>
-          <button
+          {/*
+            <button
             onClick={() => {
               setIsCompleted(false);
               setCurrentStep(1);
@@ -279,8 +329,9 @@ export const QuestionnaireForm = () => {
             className="bg-[#6A1B9A] hover:bg-[#4A148C] text-white px-8 py-3 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-2 mx-auto"
           >
             <RotateCcw size={20} />
-            Take Again
+            Boton de ejemplo
           </button>
+          */}
         </div>
       </div>
     );
@@ -290,8 +341,10 @@ export const QuestionnaireForm = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#FAFAFA] to-[#E1F5FE]">
       <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-4xl w-full">
         <div className="bg-gradient-to-r from-[#6A1B9A] to-[#8E24AA] p-8 text-white">
-          <h1 className="text-3xl font-bold mb-2">Questionnaire</h1>
-          <p className="text-white/90 mb-4">Help us understand you better</p>
+          <h1 className="text-3xl font-bold mb-2">Explicanos tu caso</h1>
+          <p className="text-white/90 mb-4">
+            Ayudanos a comprender tu situación
+          </p>
           <div className="w-full bg-white/20 rounded-full h-2">
             <div
               className="bg-white h-2 rounded-full transition-all duration-500 ease-out"
@@ -299,7 +352,7 @@ export const QuestionnaireForm = () => {
             />
           </div>
           <p className="text-sm text-white/80 mt-2">
-            {answeredQuestions} of {totalQuestions} questions completed
+            {answeredQuestions} de {totalQuestions} preguntas respondidas
           </p>
         </div>
 
@@ -324,15 +377,18 @@ export const QuestionnaireForm = () => {
                 <div className="mb-8">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm font-medium text-[#6A1B9A] bg-[#6A1B9A]/10 px-3 py-1 rounded-full">
-                      Question {currentQuestionIndex + 1} of {currentQuestions.length}
+                      Pregunta {currentQuestionIndex + 1} de{" "}
+                      {currentQuestions.length}
                     </span>
                     <span className="text-sm text-[#757575]">
-                      Step {currentStep} of {Object.keys(questions).length}
+                      Paso {currentStep} de {Object.keys(questions).length}
                     </span>
                   </div>
                   <h2 className="text-2xl font-bold text-[#424242] mb-6 leading-relaxed">
                     {currentQuestion?.question}
-                    {currentQuestion?.required && <span className="text-[#EF9A9A] ml-1">*</span>}
+                    {currentQuestion?.required && (
+                      <span className="text-[#EF9A9A] ml-1">*</span>
+                    )}
                   </h2>
                 </div>
 
@@ -352,7 +408,7 @@ export const QuestionnaireForm = () => {
                   className="flex items-center gap-2 px-6 py-3 text-[#757575] hover:text-[#424242] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft size={20} />
-                  Previous
+                  Anterior
                 </button>
 
                 <button
@@ -363,22 +419,21 @@ export const QuestionnaireForm = () => {
                   {isSubmitting ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Submitting...
+                      Enviando...
                     </>
                   ) : isLastStep && isLastQuestionInStep ? (
                     <>
-                      Complete
+                      Enviar Respuestas
                       <CheckCircle size={20} />
                     </>
                   ) : (
                     <>
-                      Next
+                      Siguiente
                       <ChevronRight size={20} />
                     </>
                   )}
                 </button>
               </div>
-
             </div>
           </div>
         </div>
